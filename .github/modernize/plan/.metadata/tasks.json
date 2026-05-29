@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "upgrade",
+      "id": "001-upgrade-dotnet-to-net10",
+      "description": "Upgrade the application runtime and project format to the latest .NET LTS version.",
+      "reason": "The application currently targets .NET Framework 4.8 and needs modernization to align with the requested latest framework and cloud-native readiness.",
+      "requirements": "Upgrade the application to .NET 10 (latest LTS), including project format modernization required for the target runtime while preserving existing business behavior.",
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "002-transform-cloud-native-services",
+      "description": "Modernize the application to use Azure cloud-native services for configuration, identity, and data access.",
+      "reason": "The modernization goal requires moving from local and legacy patterns to Azure-native managed services.",
+      "requirements": "Migrate application configuration and secrets management to Azure App Configuration and Azure Key Vault, migrate SQL connectivity to Azure SQL Database, and use Managed Identity for service authentication.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10"
+      ],
+      "skills": [
+        {
+          "name": "migration-local-appsettings-azure-app-configuration-via-deployment",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-azure-keyvault-secret",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-azure-sql-database",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-managed-identity",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "003-security-cve-remediation",
+      "description": "Scan and remediate CVEs in dependencies before deployment.",
+      "reason": "Security remediation is required in every modernization plan and should be completed before deployment.",
+      "requirements": "Scan dependencies for known CVEs, upgrade to patched versions, document major-version remediation risk when applicable, and verify build and tests pass after fixes.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10",
+        "002-transform-cloud-native-services"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "deployment",
+      "id": "004-deployment-azure-container-apps",
+      "description": "Deploy the modernized application to Azure Container Apps.",
+      "reason": "The user explicitly requested deploying the modernized application to Azure.",
+      "requirements": "Containerize and deploy the application to Azure Container Apps, configure runtime settings for cloud operation, and validate deployment readiness.",
+      "dependencies": [
+        "001-upgrade-dotnet-to-net10",
+        "002-transform-cloud-native-services",
+        "003-security-cve-remediation"
+      ],
+      "skills": [
+        {
+          "name": "azcli-containerapp-deploy",
+          "location": "builtin"
+        }
+      ],
+      "targetAzureService": "Azure Container Apps",
+      "resourceStatus": "will create new service",
+      "deploymentTool": "bicep"
+    }
+  ],
+  "metadata": {
+    "planName": "plan",
+    "projectName": "ZavaAccountManager",
+    "language": "dotnet",
+    "createdAt": "2026-05-29T07:53:54.328Z",
+    "version": "1.0"
+  }
+}
