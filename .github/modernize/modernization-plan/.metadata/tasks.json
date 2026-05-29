@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "transform",
+      "id": "001-transform-externalize-application-settings",
+      "description": "Externalize non-secret application settings for cloud-ready configuration management.",
+      "reason": "The assessment identified hardcoded URLs in source/config files that reduce portability and operational flexibility.",
+      "requirements": "Addresses issues: Hardcoded URLs detected. Move non-secret URL and endpoint configuration from local web.config settings into Azure App Configuration while preserving existing application behavior.",
+      "skills": [
+        {
+          "name": "migration-local-appsettings-azure-app-configuration-via-deployment",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "002-transform-migrate-sql-connectivity-to-azure-sql",
+      "description": "Migrate SQL connectivity to Azure SQL Database using Azure-native authentication.",
+      "reason": "The assessment identified SQL connection and provider patterns in web.config that should be modernized for Azure.",
+      "requirements": "Addresses issues: SQL database connection detected, Connection strings without configuration builders detected, System.Data.SqlClient dependency detected. Migrate database connectivity to Azure SQL Database and use managed identity authentication instead of embedded credentials.",
+      "dependencies": [
+        "001-transform-externalize-application-settings"
+      ],
+      "skills": [
+        {
+          "name": "migration-azure-sql-database",
+          "location": "builtin"
+        },
+        {
+          "name": "migration-managed-identity",
+          "location": "builtin"
+        }
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "003-security-remediate-dependency-cves",
+      "description": "Scan and remediate known CVEs in project dependencies before deployment readiness.",
+      "reason": "Security remediation is required in every modernization plan to reduce known vulnerability risk.",
+      "requirements": "Scan project dependencies for known CVEs and upgrade vulnerable dependencies to the minimum patched versions. If major version upgrades are required, document potential breaking change risks and verify build/test outcomes after remediation.",
+      "dependencies": [
+        "001-transform-externalize-application-settings",
+        "002-transform-migrate-sql-connectivity-to-azure-sql"
+      ],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "modernization-plan",
+    "projectName": "ZavaAccountManager",
+    "language": "dotnet",
+    "createdAt": "2026-05-29T00:27:33Z",
+    "version": "1.0"
+  }
+}
